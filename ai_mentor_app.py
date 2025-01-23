@@ -1,11 +1,9 @@
- 
 import streamlit as st
 import google.generativeai as genai
+
 # Add the app title and subheading at the top of the main page
 st.title("AI Mentor")
 st.subheader("Your personalized AI-powered learning companion.")
-
-
 
 # Add a styled link to redirect to the Google AI Studio API key page
 st.sidebar.markdown(
@@ -28,12 +26,8 @@ if api_key:
     genai.configure(api_key=api_key)
 
 # Initialize session state for chain of thought
-if "current_topic" not in st.session_state:
-    st.session_state["current_topic"] = None
 if "conversation_history" not in st.session_state:
     st.session_state["conversation_history"] = []
-if "question_counter" not in st.session_state:
-    st.session_state["question_counter"] = 0
 
 # Function to interact with Google AI Studio
 def call_google_ai(prompt):
@@ -66,8 +60,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-
-
 # Page 1: Learn Any Topic
 if page == "Learn Any Topic":
     st.title("Learn Any Topic")
@@ -83,7 +75,6 @@ if page == "Learn Any Topic":
     # Start Learning
     if st.button("Start Learning"):
         if topic and profile:
-            st.session_state["current_topic"] = topic
             st.session_state["conversation_history"] = []  # Reset history for new topic
 
             if subtopic:
@@ -113,7 +104,7 @@ if page == "Learn Any Topic":
     if st.button("Submit Query"):
         if user_query:
             chat_prompt = f"""
-            Continue teaching the topic '{st.session_state.get('current_topic', 'the topic')}'.
+            Continue teaching the topic '{topic}'.
             Based on the user's query: {user_query}, provide a detailed response while maintaining the context of
             previous explanations: {st.session_state.get('conversation_history', [{'content': ''}])[-1]['content']}
             """
@@ -130,45 +121,58 @@ elif page == "Prepare for Interview":
     job_description = st.text_area("Paste the job description:")
     prep_mode = st.radio("What do you want to prepare?", ["All Questions", "Topic/Tool-Specific Questions"])
     
-    if prep_mode == "Topic/Tool-Specific Questions":
-        selected_tool = st.text_input("Enter the topic/tool to focus on:")
-        if st.button("Generate Tool-Specific Questions"):
-            if selected_tool:
-                tool_specific_prompt = f"""
+    # Submit Button to Generate Initial Questions
+    if st.button("Submit"):
+        if job_profile and job_description:
+            if prep_mode == "All Questions":
+                prompt = f"""
                 You are an expert interviewer preparing candidates for a {job_profile} role. 
-                Based on this job description: {job_description}, and the focus on {selected_tool}, 
-                generate a list of expected interview questions specific to this topic/tool. 
-                Provide detailed answers with explanations.
+                Based on this job description: {job_description}, generate a list of expected interview questions. 
+                Provide answers with in-depth explanations.
                 """
-                response = call_google_ai(tool_specific_prompt)
+            elif prep_mode == "Topic/Tool-Specific Questions":
+                selected_tool = st.text_input("Enter the topic/tool to focus on:")
+                if selected_tool:
+                    prompt = f"""
+                    You are an expert interviewer preparing candidates for a {job_profile} role. 
+                    Based on this job description: {job_description} and the tool '{selected_tool}', 
+                    generate a list of topic-specific interview questions with detailed answers.
+                    """
+                else:
+                    st.warning("Please enter a specific topic/tool.")
+                    prompt = None
+            else:
+                prompt = None
+
+            if prompt:
+                response = call_google_ai(prompt)
                 if response:
                     st.session_state["conversation_history"].append({"role": "system", "content": response})
                     st.write(response)
-            else:
-                st.warning("Please enter the topic/tool to focus on.")
+        else:
+            st.warning("Please enter both job profile and job description.")
 
+    # More Questions Button
     if st.button("More Questions"):
         if st.session_state.get("conversation_history"):
-            question_prompt = f"""
-            Continue generating more interview questions for the job profile '{job_profile}' 
-            with a focus on '{selected_tool}' or the job description provided. Include detailed answers and explanations.
+            more_questions_prompt = f"""
+            Continue generating additional interview questions for the job profile '{job_profile}' 
+            based on the provided description: {job_description}.
             """
-            response = call_google_ai(question_prompt)
+            response = call_google_ai(more_questions_prompt)
             if response:
                 st.session_state["conversation_history"].append({"role": "system", "content": response})
                 st.write(response)
 
-    # Chat Bar for Custom Interview Queries
+    # Chat Bar for Follow-Up Queries
     st.write("---")
     user_query = st.text_input("Ask a specific interview-related question:")
     if st.button("Submit Query for Interview"):
         if user_query:
-            chat_prompt = f"""
-            Based on the job description '{job_description}' and job profile '{job_profile}', respond to the user's query:
-            {user_query}. Include relevant examples and in-depth explanations.
+            follow_up_prompt = f"""
+            Based on the job description '{job_description}' and job profile '{job_profile}', respond to this query:
+            {user_query}.
             """
-            response = call_google_ai(chat_prompt)
+            response = call_google_ai(follow_up_prompt)
             if response:
                 st.write(response)
-
-
