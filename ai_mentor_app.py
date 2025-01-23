@@ -23,7 +23,10 @@ api_key = st.sidebar.text_input("Enter your Google AI Studio API Key", type="pas
 
 # Configure the Google Generative AI client if API key is provided
 if api_key:
-    genai.configure(api_key=api_key)
+    try:
+        genai.configure(api_key=api_key)
+    except Exception as e:
+        st.error(f"Failed to configure API key: {e}")
 
 # Initialize session state for chain of thought
 if "current_topic" not in st.session_state:
@@ -40,9 +43,10 @@ def call_google_ai(prompt):
         return None
     
     try:
-        # Generate a response using the Google Generative AI library
-        response = genai.generate_text(prompt=prompt)
-        return response.result  # Extract the generated text
+        # Create a GenerativeModel instance and generate content
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        return response.text  # Access the generated content
     except Exception as e:
         st.error(f"Error generating content: {e}")
         return None
