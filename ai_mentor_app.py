@@ -1,9 +1,11 @@
+ 
 import streamlit as st
 import google.generativeai as genai
-
 # Add the app title and subheading at the top of the main page
 st.title("AI Mentor")
 st.subheader("Your personalized AI-powered learning companion.")
+
+
 
 # Add a styled link to redirect to the Google AI Studio API key page
 st.sidebar.markdown(
@@ -23,10 +25,7 @@ api_key = st.sidebar.text_input("Enter your Google AI Studio API Key", type="pas
 
 # Configure the Google Generative AI client if API key is provided
 if api_key:
-    try:
-        genai.configure(api_key=api_key)
-    except Exception as e:
-        st.error(f"Failed to configure API key: {e}")
+    genai.configure(api_key=api_key)
 
 # Initialize session state for chain of thought
 if "current_topic" not in st.session_state:
@@ -43,10 +42,9 @@ def call_google_ai(prompt):
         return None
     
     try:
-        # Create a GenerativeModel instance and generate content
         model = genai.GenerativeModel("gemini-1.5-flash")
         response = model.generate_content(prompt)
-        return response.text  # Access the generated content
+        return response.text
     except Exception as e:
         st.error(f"Error generating content: {e}")
         return None
@@ -67,6 +65,8 @@ st.sidebar.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
 
 # Page 1: Learn Any Topic
 if page == "Learn Any Topic":
@@ -170,3 +170,5 @@ elif page == "Prepare for Interview":
             response = call_google_ai(chat_prompt)
             if response:
                 st.write(response)
+
+
