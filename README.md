@@ -1,6 +1,10 @@
 # AI Mentor
 ### Your personalized AI-powered learning companion.
+## Live Demo 🚀
 
+Try the app here: **[AI Mentor Live App](https://ai-mentor-7qvdwcmayawx3buodmk5ah.streamlit.app/)**
+
+---
 AI Mentor is a Streamlit app that allows users to:
 - Learn any topic with detailed explanations and examples.
 - Prepare for interviews with questions and answers tailored to job profiles and descriptions.
