@@ -1,10 +1,9 @@
 import streamlit as st
 import google.generativeai as genai
+
 # Add the app title and subheading at the top of the main page
 st.title("AI Mentor")
 st.subheader("Your personalized AI-powered learning companion.")
-
-
 
 # Add a styled link to redirect to the Google AI Studio API key page
 st.sidebar.markdown(
@@ -41,9 +40,9 @@ def call_google_ai(prompt):
         return None
     
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
-        return response.text
+        # Generate a response using the Google Generative AI library
+        response = genai.generate_text(prompt=prompt)
+        return response.result  # Extract the generated text
     except Exception as e:
         st.error(f"Error generating content: {e}")
         return None
@@ -64,8 +63,6 @@ st.sidebar.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-
 
 # Page 1: Learn Any Topic
 if page == "Learn Any Topic":
